@@ -12,7 +12,7 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
-    container_name: telegram_bot
+    container_name: telegram_bot_mon
     working_dir: /app
     command: python -m bot.bot
     env_file:
