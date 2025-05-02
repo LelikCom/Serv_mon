@@ -4,4 +4,4 @@ psutil
 python-dotenv
 aiogram==3.3.0
 pandas
-
+psycopg2-binary
