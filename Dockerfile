@@ -8,22 +8,23 @@ RUN pip install --no-cache-dir -r requirements.txt
 
 # Устанавливаем нужные системные утилиты
 RUN apt update && apt install -y \
-    iputils-ping \       # для ping
-    procps \             # для uptime, free, top
-    docker.io \          # для docker ps / stats
-    curl \               # на всякий случай
+    iputils-ping \
+    procps \
+    docker.io \
+    curl \
     && apt clean
 
-# Копируем по частям, чтобы всё точно попало
+# Копируем необходимые файлы
 COPY start.sh .
 COPY init_db.py .
 COPY run_speedtest.py .
 COPY hourly_report.py .
 
+# Копируем директории с ботом и логгерами
 COPY bot/ ./bot/
 COPY loggers/ ./loggers/
 
-# Разрешаем запуск скрипта
+# Даём права на запуск основного скрипта
 RUN chmod +x start.sh
 
 # Старт всей системы
