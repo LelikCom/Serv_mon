@@ -56,6 +56,17 @@ def build_stats_summary() -> str:
         return f"❌ Ошибка при обработке лога: {e}"
 
 def format_sys_status() -> str:
+    def clean_unit(val: str) -> float:
+        return float(
+            val.replace('Gi', '')
+               .replace('Mi', '')
+               .replace('Ti', '')
+               .replace('G', '')
+               .replace('M', '')
+               .replace('T', '')
+               .replace('i', '')
+        )
+
     try:
         now = datetime.datetime.now().strftime("%H:%M")
         uptime_raw = subprocess.check_output("uptime", shell=True, text=True).strip()
@@ -72,11 +83,11 @@ def format_sys_status() -> str:
         # память
         ram = free[1].split()
         ram_total, ram_used = ram[1], ram[2]
-        ram_pct = int(float(ram[2].replace('G','')) / float(ram[1].replace('G','')) * 100)
+        ram_pct = int(clean_unit(ram_used) / clean_unit(ram_total) * 100)
 
         swap = free[2].split()
         swap_total, swap_used = swap[1], swap[2]
-        swap_pct = int(float(swap[2].replace('M','')) / float(swap[1].replace('M','')) * 100) if swap[1] != "0M" else 0
+        swap_pct = int(clean_unit(swap_used) / clean_unit(swap_total) * 100) if swap_total != "0M" else 0
 
         # диски
         disk_lines = []
