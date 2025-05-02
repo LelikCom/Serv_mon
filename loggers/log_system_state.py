@@ -27,6 +27,19 @@ def get_docker_stats() -> str:
         return "n/a"
 
 
+def clean_unit(val: str) -> float:
+    """Удаляет единицы измерения и конвертирует в float"""
+    return float(
+        val.replace('Gi', '')
+           .replace('Mi', '')
+           .replace('Ti', '')
+           .replace('G', '')
+           .replace('M', '')
+           .replace('T', '')
+           .replace('i', '')
+    )
+
+
 def insert_sys_status(cur):
     try:
         uptime_raw = subprocess.check_output("uptime", shell=True, text=True).strip()
@@ -36,11 +49,11 @@ def insert_sys_status(cur):
 
         ram = free[1].split()
         ram_total, ram_used = ram[1], ram[2]
-        ram_pct = int(float(ram_used.replace('G', '')) / float(ram_total.replace('G', '')) * 100)
+        ram_pct = int(clean_unit(ram_used) / clean_unit(ram_total) * 100)
 
         swap = free[2].split()
         swap_total, swap_used = swap[1], swap[2]
-        swap_pct = int(float(swap_used.replace('M', '')) / float(swap_total.replace('M', '')) * 100) if swap_total != "0M" else 0
+        swap_pct = int(clean_unit(swap_used) / clean_unit(swap_total) * 100) if swap_total != "0M" else 0
 
         uptime_str = uptime_raw.split(" up ")[1].split(",")[0]
 

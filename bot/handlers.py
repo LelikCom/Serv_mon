@@ -92,9 +92,10 @@ async def docker_stats(callback: CallbackQuery):
 
 @router.callback_query(F.data == "bot_logs")
 async def telegram_bot_logs(callback: CallbackQuery):
-    result = run_command("cd Serv_mon && docker logs telegram_bot_mon --tail 50")
+    result = run_command("docker logs telegram_bot_mon --tail 50")
     await callback.message.answer(f"<pre>{result}</pre>")
     await callback.answer()
+
 
 
 @router.callback_query(F.data == "restart_librespeed")
