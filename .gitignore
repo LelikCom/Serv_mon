@@ -1,4 +1,16 @@
-.env
+# Python
 __pycache__/
 *.pyc
+
+# Logs
 log/
+
+# Env
+.env
+
+# Docker
+*.log
+*.pid
+
+# IDE
+.idea/
