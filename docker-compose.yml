@@ -26,6 +26,7 @@ services:
       - .env
     volumes:
       - ./log:/app/log
+      - /var/run/docker.sock:/var/run/docker.sock
     networks:
       - tele_vba_bot_default
     restart: unless-stopped
