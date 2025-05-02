@@ -7,6 +7,8 @@ from bot.states import TerminalState
 from bot.terminal_access import run_command
 import os
 from bot.utils import build_stats_summary
+from bot.utils import format_sys_status
+
 
 router = Router()
 ALLOWED_CHAT_ID = int(os.getenv("TELEGRAM_CHAT_ID"))
@@ -66,9 +68,12 @@ async def handle_terminal_input(message: Message):
 
 @router.callback_query(F.data == "sys_status")
 async def sys_status(callback: CallbackQuery):
-    result = run_command("uptime && free -h && df -h")
-    await callback.message.answer(f"<pre>{result}</pre>")
+    if callback.message.chat.id != ALLOWED_CHAT_ID:
+        return
+    result = format_sys_status()
+    await callback.message.answer(result, parse_mode="HTML")
     await callback.answer()
+
 
 
 @router.callback_query(F.data == "docker_ps")
@@ -87,7 +92,7 @@ async def docker_stats(callback: CallbackQuery):
 
 @router.callback_query(F.data == "bot_logs")
 async def telegram_bot_logs(callback: CallbackQuery):
-    result = run_command("cd Tele_VBA_Bot && docker logs telegram_bot --tail 50")
+    result = run_command("cd Serv_mon && docker logs telegram_bot_mon --tail 50")
     await callback.message.answer(f"<pre>{result}</pre>")
     await callback.answer()
 

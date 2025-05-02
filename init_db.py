@@ -35,10 +35,18 @@ def init_db():
                 CREATE TABLE IF NOT EXISTS system_metrics (
                     id SERIAL PRIMARY KEY,
                     timestamp TIMESTAMPTZ DEFAULT NOW(),
-                    cpu_percent REAL,
-                    ram_percent REAL,
-                    disk_percent REAL,
-                    uptime TEXT
+                    uptime TEXT,
+                    users INTEGER,
+                    load_1min REAL,
+                    load_5min REAL,
+                    load_15min REAL,
+                    ram_total TEXT,
+                    ram_used TEXT,
+                    ram_pct INTEGER,
+                    swap_total TEXT,
+                    swap_used TEXT,
+                    swap_pct INTEGER,
+                    top_processes TEXT
                 );
             """)
             # Таблица Docker

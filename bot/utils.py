@@ -1,9 +1,15 @@
 import pandas as pd
 import os
+import subprocess
+import datetime
 
 LOG_PATH = "./log/speed_log.csv"
 
 def build_stats_summary() -> str:
+    """
+    Читает лог скорости, рассчитывает средние значения за последний день и по часам.
+    Возвращает HTML-строку со сводкой.
+    """
     if not os.path.exists(LOG_PATH):
         return "⚠️ Лог-файл отсутствует."
 
@@ -17,12 +23,9 @@ def build_stats_summary() -> str:
         df_day = df[df["date"] == last_day]
 
         if df_day.empty:
-            return "📊 Нет данных за текущие сутки."
+            return f"📊 Нет данных за {last_day}."
 
-        # Средние по дню
         mean_day = df_day[["ping", "jitter", "download", "upload"]].mean().round(2)
-
-        # Средние по часам
         hourly = (
             df_day.groupby("hour")[["ping", "jitter", "download", "upload"]]
             .mean()
@@ -30,7 +33,6 @@ def build_stats_summary() -> str:
             .reset_index()
         )
 
-        # Формируем текст
         summary = f"<b>📊 Статистика за {last_day}</b>\n\n"
         summary += (
             f"<b>Средние значения:</b>\n"
@@ -52,3 +54,60 @@ def build_stats_summary() -> str:
 
     except Exception as e:
         return f"❌ Ошибка при обработке лога: {e}"
+
+def format_sys_status() -> str:
+    try:
+        now = datetime.datetime.now().strftime("%H:%M")
+        uptime_raw = subprocess.check_output("uptime", shell=True, text=True).strip()
+        free = subprocess.check_output("free -h", shell=True, text=True).strip().splitlines()
+        df = subprocess.check_output("df -h | grep -E '^(/dev|overlay)'", shell=True, text=True).strip().splitlines()
+        top_output = subprocess.check_output("ps aux --sort=-%mem | head -n 6", shell=True, text=True)
+
+        # uptime + нагрузка
+        parts = uptime_raw.split(" up ")
+        uptime_info = parts[1].split(",")[0]
+        load_avg = uptime_raw.split("load average: ")[1]
+        users = uptime_raw.split(" user")[0].split()[-1]
+
+        # память
+        ram = free[1].split()
+        ram_total, ram_used = ram[1], ram[2]
+        ram_pct = int(float(ram[2].replace('G','')) / float(ram[1].replace('G','')) * 100)
+
+        swap = free[2].split()
+        swap_total, swap_used = swap[1], swap[2]
+        swap_pct = int(float(swap[2].replace('M','')) / float(swap[1].replace('M','')) * 100) if swap[1] != "0M" else 0
+
+        # диски
+        disk_lines = []
+        for line in df:
+            parts = line.split()
+            mount = parts[-1]
+            used = parts[2]
+            total = parts[1]
+            percent = parts[4]
+            disk_lines.append(f"📁 {mount} — {percent} — {used} / {total}")
+
+        # топ процессов
+        top_lines = top_output.strip().splitlines()[1:]
+        top_formatted = []
+        for line in top_lines:
+            parts = line.split(None, 10)
+            if len(parts) == 11:
+                top_formatted.append(f"🔹 {parts[10]} — {parts[3]}% MEM")
+
+        # итоговое сообщение
+        msg = f"<b>📊 Состояние сервера на {now}</b>\n\n"
+        msg += f"🕒 Аптайм: {uptime_info}\n"
+        msg += f"👥 Пользователи: {users}\n"
+        msg += f"💻 Загрузка (1/5/15 мин): {load_avg}\n\n"
+        msg += f"💾 Память: <b>{ram_pct}%</b> — {ram_used} / {ram_total}\n"
+        msg += f"💤 Swap: <b>{swap_pct}%</b> — {swap_used} / {swap_total}\n\n"
+        msg += "🗂 <b>Диски:</b>\n" + "\n".join(disk_lines) + "\n\n"
+        msg += "<b>🔥 Топ по памяти:</b>\n" + "\n".join(top_formatted)
+
+        return msg
+
+    except Exception as e:
+        return f"<b>❌ Ошибка:</b> {e}"
+
