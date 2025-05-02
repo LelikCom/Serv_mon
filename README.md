@@ -22,8 +22,8 @@
 ## 📦 Установка
 
 ```bash
-git clone https://github.com/yourname/internet_monitor.git
+git clone https://github.com/LelikCom/Serv_mon
 cd internet_monitor
-cp .env.template .env  # и заполни токен + chat_id
+cp .env.template .env
 docker compose build
 docker compose up -d
