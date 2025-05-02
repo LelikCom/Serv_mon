@@ -4,8 +4,11 @@ services:
   monitor:
     build: .
     container_name: internet_monitor
+    env_file:
+      - .env
     volumes:
       - ./log:/app/log
+      - /var/run/docker.sock:/var/run/docker.sock
     restart: unless-stopped
 
   bot:
